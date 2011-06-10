@@ -1,5 +1,7 @@
 #!/usr/bin/python
-#dropmonitor.py
+#mtgoxdropmon.py
+#First version of mtgoxdropmon. See comments in mtgoxdropmon2.py for a full
+#explanation of what these programs are for.
 
 threshold = 0.2
 wait = 60

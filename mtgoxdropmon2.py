@@ -1,5 +1,16 @@
 #!/usr/bin/python
-#dropmonitor.py
+#mtgoxdropmon2.py
+#This started as a very-beginner, simple program to monitor the Bitcoin
+#exchange Mt. Gox for precipitous drops in value.
+#Currently when run it will print a quote every minute (or however long is
+#specified in "wait") including the 48-hour high, the last price, and the
+#percentage drop between the two.
+#BUT if the drop exceeds 20% (or whatever is specified in "threshold"), it will
+#use the pygame library to open a window with a huge, blinking red box as an
+#alert. The alert goes away if it detects the price has risen back above the
+#threshold.
+#If it encounters an error (in the program or in connecting to mtgox.com), it
+#will raise a blinking yellow alert.
 
 threshold = 0.2
 wait = 60

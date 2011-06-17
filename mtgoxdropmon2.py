@@ -12,12 +12,12 @@
 #If it encounters an error (in the program or in connecting to mtgox.com), it
 #will raise a blinking yellow alert.
 
-threshold = 0.2
+threshold = 0.20
 wait = 60
 url = "https://mtgox.com/code/data/ticker.php"
 alertBorder = 20
-WinH = 480
-WinW = 640
+WinH = 960
+WinW = 1280
 
 import pygame
 import time
@@ -26,9 +26,12 @@ from pygame.locals import *
 import urllib
 
 alert = False
+exceptionmsg = []
+line = "uninitialized"
+high = -1
+last = -1
 drop = -1
 pct = "-1%"
-exceptionmsg = ""
 
 def alarm(drop):
   
@@ -53,7 +56,13 @@ def alarm(drop):
     print "high: ", high
     print "last: ", last
     print "h1: ", h1, "h2: ", h2, "l1: ", l1, "l2: ", l2
-    print "Error Message: ", exceptionmsg
+    if len(exceptionmsg) == 1:
+      print "Error Message: ", exceptionmsg[0]
+    elif len(exceptionmsg) > 1:
+      print "Error Messages:"
+      for msg in exceptionmsg:
+        print "\t", msg
+    print ""
   
   pygame.init()
   screen = pygame.display.set_mode((WinW,WinH))
@@ -72,19 +81,31 @@ def alarm(drop):
     time.sleep(1)
   
   pygame.display.quit()
-  
 
 while True:
+  
+  alert = False
+  exceptionmsg = ["uninitialized"]
+  line = "uninitialized"
   
   try:
     page = urllib.urlopen(url)
     line = page.readline()
   except IOError:
-    print "url open error"
     alert = True
-    exceptionmsg = "url open error"
+    if exceptionmsg[0] == "uninitialized":
+      exceptionmsg[0] = "url open error"
+    else:
+      exceptionmsg.append("url open error")
+    print exceptionmsg[-1]
   #line = '{"ticker":{"high":18.998,"low":15.5,"vol":35381,"buy":17.8002,"sell":18,"last":17.8002}}'
   #line = '{"ticker":{"high":18.998,"low":15.5,"vol":35381,"buy":17.8002,"sell":18,"last":14.8002}}'
+  
+  if line[0:10] != '{"ticker":':
+    alert = True
+    if exceptionmsg[0] != "url open error":
+      exceptionmsg.append("site data not expected format")
+      print exceptionmsg[-1]
   
   h1 = -1
   h2 = -1
@@ -110,15 +131,17 @@ while True:
     drop = (high - last)/high
     print high, last, str(int(drop * 100)) + "%"
   else:
-    print "h1, h2, l1, or l2 problem"
     alert = True
+    if exceptionmsg[0] != "url open error":
+      exceptionmsg.append("h1, h2, l1, or l2 problem")
+      print exceptionmsg[-1]
   
   if drop > threshold:
-    print "drop > threshold"
     alert = True
+    if exceptionmsg[0] != "url open error":
+      print "drop > threshold"
   
   if alert:
     alarm(drop)
-    alert = False
   else:
     time.sleep(wait)
